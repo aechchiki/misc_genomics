@@ -27,9 +27,6 @@ echo "---"
 
 # print read length next to mapped fragment  in the final stats file
 
-paste 
-
-
 awk 'FNR==NR{a[$1]=$4;next} ($1 in a) {print $0,a[$1],$2}'  $sampath$samfile'_FinalStats' $fastapath$fastafile'_ReadNameLength' | awk '{print $1,$2,$3}'  > $sampath$fastafile'_MappedReadLength' 
 
 # get the mapped fragment length, divide it to the the whole read length => percentage of mapped reads 
