@@ -28,7 +28,7 @@ echo "Getting read bitwise flags..."
 cat $samfile | grep -v ^@ | awk '{ print $2 }' > $samfile'_ReadsFlag'
 echo "Done. Output written to : $samfile'_ReadsFlag'"
 echo "Getting map ID..."
-cat $samfile | grep -v ^@ | awk '{ print $1 }' > $samfile'_ReadsID'
+cat $samfile | grep -v ^@ | awk '{ print $3 }' > $samfile'_ReadsID'
 echo "Done. Output written to : $samfile'_ReadsID'"
 echo "---"
 
@@ -71,7 +71,7 @@ cat $samfile | grep -v ^@ | awk '{ print $10 }' | awk '{ print length($0); }' > 
 # insertion
 echo "1. Getting insertion count per read..."
 paste $samfile"_Insertions" $samfile"_MapLength" | awk '!$2 {exit ; }  {printf "%f\n",$1/$2 } ' > $samfile"_InsMap"
-echo "Done. Output written to: $samfile_InsMap"
+echo "Done. Output written to: $samfile_'InsMap'"
 # deletion
 echo "2. Getting deletion count per read..."
 paste $samfile"_Deletions" $samfile"_MapLength" | awk '!$2 {exit ; }  {printf "%f\n",$1/$2 } ' > $samfile"_DelMap"
