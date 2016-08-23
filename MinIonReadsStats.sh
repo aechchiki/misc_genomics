@@ -4,7 +4,7 @@ ls *.fastq
 echo "---"
 
 # enter your file
-echo "Input the fastq file of your choice (.fasta or .fa), followed by [ENTER]:"
+echo "Input the fastq file of your choice (.fastq or .fq), followed by [ENTER]:"
 read fastqfile
 echo "---"
 
