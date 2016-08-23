@@ -30,6 +30,7 @@ echo "Done. Output written to : $samfile'_ReadsFlag'"
 echo "Getting map ID..."
 cat $samfile | grep -v ^@ | awk '{ print $1 }' > $samfile'_ReadsID'
 echo "Done. Output written to : $samfile'_ReadsID'"
+echo "---"
 
 # mapping quality 
 echo "Getting the number of reads per mapping quality score..."
@@ -49,7 +50,7 @@ cat $samfile'_ReadsCigar' | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 
 # mismatch
 echo "3. Generating mismatch count per read..."
 cat $samfile'_ReadsCigar'  | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 's/[0-9]*[!H]//g'| sed 's/[0-9]*[!P]//g' | sed 's/[0-9]*[!\=]//g' | sed 's/[0-9]*[!X]//g' | sed 's/[0-9]*[!D]//g' | sed 's/[0-9]*[!I]//g' | sed 's/M//g'| awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c, "Cigar: ", $0}' > $samfile'_MismatchPerRead'
-
+echo "---"
 
 # get info from cigar line 
 echo "Analyzing CIGAR line... "
@@ -62,6 +63,7 @@ cat $samfile'_DeletionPerRead' | awk '{print $1}' > $samfile'_Deletions'
 # mismatch
 echo "3. Extracting mismatch count per read..."
 cat $samfile'_MismatchPerRead' | awk '{print $1}' > $samfile'_Mismatches'
+echo "---"
 
 # get mapped length
 echo "Getting mapped segment length..."
@@ -78,10 +80,8 @@ echo "Done. Output written to: $samfile'_DelMap'"
 echo "3. Getting mismatch count per read..."
 paste $samfile"_Mismatches" $samfile"_MapLength" | awk '!$2 {exit ; }  {printf "%f\n",$1/$2 } ' > $samfile"_MisMap"
 echo "Done. Output written to: $samfile'_MisMap'"
+echo "---"
 
 echo "Getting reads stats..."
 paste $samfile'_ReadsName' $samfile'_ReadsFlag' $samfile'_ReadsID' $samfile"_MapLength" $samfile"_InsMap" $samfile'_DelMap' $samfile'_MisMap' > $samfile'_FinalStats'
 echo "Done. Output written to $samfile'_FinalStats'"
-
-
-
