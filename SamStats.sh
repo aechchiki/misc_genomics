@@ -20,12 +20,22 @@ cat $samfile | grep -v ^@ | awk '{ print $2 }' | sort | uniq -c > $samfile'_Read
 echo "Done. Output written to: $samfile'_ReadsPerFlag'"
 echo "---"
 
+# read name
+echo "Getting read names..."
+cat $samfile | grep -v ^@ | awk '{ print $1 }' > $samfile'_ReadsName'
+echo "Done. Output written to : $samfile'_ReadsName'"
+echo "Getting read bitwise flags..."
+cat $samfile | grep -v ^@ | awk '{ print $2 }' > $samfile'_ReadsFlag'
+echo "Done. Output written to : $samfile'_ReadsFlag'"
+echo "Getting map ID..."
+cat $samfile | grep -v ^@ | awk '{ print $1 }' > $samfile'_ReadsID'
+echo "Done. Output written to : $samfile'_ReadsID'"
+
 # mapping quality 
 echo "Getting the number of reads per mapping quality score..."
 cat $samfile | grep -v ^@ | awk '{ print $5 }' | sort -n | uniq -c > $samfile'_ReadsMappingScore'
 echo "Done. Output written to: $samfile'_ReadsMappingScore'"
 echo "---"
-
 
 # error rate 
 echo "Parsing CIGAR line..."
@@ -68,4 +78,10 @@ echo "Done. Output written to: $samfile'_DelMap'"
 echo "3. Getting mismatch count per read..."
 paste $samfile"_Mismatches" $samfile"_MapLength" | awk '!$2 {exit ; }  {printf "%f\n",$1/$2 } ' > $samfile"_MisMap"
 echo "Done. Output written to: $samfile'_MisMap'"
+
+echo "Getting reads stats..."
+paste $samfile'_ReadsName' $samfile'_ReadsFlag' $samfile'_ReadsID' $samfile"_MapLength" $samfile"_InsMap" $samfile'_DelMap' $samfile'_MisMap' > $samfile'_FinalStats'
+echo "Done. Output written to $samfile'_FinalStats'"
+
+
 

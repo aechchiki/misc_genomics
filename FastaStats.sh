@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Suggested fasta files in current working directory: "
-ls *.fa*
+ls *.fasta
 echo "---"
 
 # enter your file
