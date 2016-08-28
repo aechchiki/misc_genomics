@@ -47,7 +47,7 @@ echo "Done. Output written to $outdir'ReadSpec'"
 # add info on  read match or mismatch, l3
 
 echo "Parsing CIGAR line..."
-cat $sampath$samfile | grep -v ^@ | awk '{ print $6 }' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
+cat $sampath$samfile | grep -v ^@ | awk '{print $6}' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
 cat $sampath$samfile | grep -v ^@ | awk '{print $1}' > $outdir'SamNames'
 # 
 echo "1. Generating insertion count per read..."
@@ -76,7 +76,6 @@ join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'ReadNameCigarDel') | awk '
 echo "Calculating percentage of alignment match in mapped read length (M/M+I)..."
 join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'MapReadLength') | awk '{print $1, ($2/$3)}' > $outdir'AlnMatchPercRead'
 
-
 # perc alignment mtch reference
 echo "Calculating percentage of alignment match in mapped reference length (M/M+D)..."
 join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'RefReadLength') | awk '{print $1, ($2/$3)}' > $outdir'AlnMatchPercRef'
@@ -85,13 +84,12 @@ join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'RefReadLength') | awk '{pr
 echo "Calculating percentage of alignment match in mapped read length (I/M+I)..."
 join <(sort $outdir'ReadNameCigarIns') <(sort $outdir'MapReadLength') | awk '{print $1, ($2/$3)}' > $outdir'AlnInsPercRead'
 
-
 # perc alignment deletions reference
 echo "Calculating percentage of alignment match in mapped reference length (D/M+D)..."
 join <(sort $outdir'ReadNameCigarDel') <(sort $outdir'RefReadLength') | awk '{print $1, ($2/$3)}' > $outdir'AlnDelPercRef'
 
-
-join <(sort $outdir'MapReadLength') <(sort  $outdir'RefReadLength' ) | join - <(sort $outdir'AlnMatchPercRead') | join - <(sort  $outdir'AlnMatchPercRef' ) | join - <(sort $outdir'AlnInsPercRead') | join - <(sort $outdir'AlnDelPercRef') > $outdir'AlnCalc'
+# merge basic stats
+paste $outdir'MapReadLength' $outdir'RefReadLength' $outdir'AlnMatchPercRead' $outdir'AlnMatchPercRef' $outdir'AlnInsPercRead' $outdir'AlnDelPercRef' | awk '{print $1,$2,$4,$6,$8,$10,$12}' > $outdir'AlnCalc'
 
 # merge all info tgth
 join <(sort $outdir'ReadSpec') <(sort $outdir'AlnCalc') > $outdir'AlnStats'
@@ -104,5 +102,5 @@ echo "Calculating proportion of mapped length to the reference length... "
 cat $outdir'AlnStats' | awk '{print $5/$6}' > $outdir'ReadRefLen'
 
 # add info on mismatch
-join < (sort $outdir'AlnStats') < (sort $outdir'ReadAlnLen') | join - <(sort $outdir'ReadRefLen') > > $outdir'AlnStatsSpec'
+paste $outdir'AlnStats' $outdir'ReadAlnLen' $outdir'ReadRefLen'  > $outdir'AlnStatsSpec'
 
