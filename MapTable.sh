@@ -102,5 +102,6 @@ echo "Calculating proportion of mapped length to the reference length... "
 cat $outdir'AlnStats' | awk '{print $5/$6}' > $outdir'ReadRefLen'
 
 # add info on mismatch
-paste $outdir'AlnStats' $outdir'ReadAlnLen' $outdir'ReadRefLen'  > $outdir'AlnStatsSpec'
+paste $outdir'AlnStats' $outdir'ReadAlnLen' $outdir'ReadRefLen'  > $outdir'AlnStatsSpecTmp'
+echo -e "ReadName\tReadLength\tAlignmentFlag\tAlignmentType\tMappedReadLength\tMappedReferenceLength\tAlignmentMatchReadRate\tAlignmentMatchReferenceRate\tAlignmentInsertionsRate\tAlignmentDeletionsRate\tMappedReadtoReadRate\tMappedReadToRefRate" | cat - $outdir'AlnStatsSpecTmp' > $outdir'AlnStatsSpec'
 
