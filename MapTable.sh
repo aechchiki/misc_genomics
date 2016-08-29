@@ -6,6 +6,8 @@ echo "Input the alignment file of your choice (.sam), followed by [ENTER]:"
 read samfile
 echo "Input path to alignment file, followed by [ENTER]:"
 read sampath
+# TODO: add choice for bam files; call module samtools
+
 
 echo "Suggested fasta files in current working directory: "
 ls *.fasta
@@ -14,10 +16,12 @@ echo "Input the fasta file of your choice (.fasta or .fa), followed by [ENTER]:"
 read fastafile
 echo "Input path to fasta file, followed by [ENTER]:"
 read fastapath
+# TODO: add choice for fastq input
 
 echo "Input the output directory you want to write to, followed by [ENTER]:"
 read outdir
 mkdir -p $outdir
+# TODO: add warning to add the final directrory backslass 
 
 
 # l1
@@ -102,6 +106,62 @@ echo "Calculating proportion of mapped length to the reference length... "
 cat $outdir'AlnStats' | awk '{print $5/$6}' > $outdir'ReadRefLen'
 
 # add info on mismatch
-paste $outdir'AlnStats' $outdir'ReadAlnLen' $outdir'ReadRefLen'  > $outdir'AlnStatsSpecTmp'
+paste $outdir'AlnStats' $outdir'ReadAlnLen' $outdir'ReadRefLen' > $outdir'AlnStatsSpecTmp'
+
 echo -e "ReadName\tReadLength\tAlignmentFlag\tAlignmentType\tMappedReadLength\tMappedReferenceLength\tAlignmentMatchReadRate\tAlignmentMatchReferenceRate\tAlignmentInsertionsRate\tAlignmentDeletionsRate\tMappedReadtoReadRate\tMappedReadToRefRate" | cat - $outdir'AlnStatsSpecTmp' > $outdir'AlnStatsSpec'
+
+# how many alignments
+cat $outdir'AlnStatsSpec' | sed -e "1d" | wc -l > $outdir'AlignNumber'
+# how many input reads 
+cat $outdir'AlnStatsSpec' | sed -e "1d" | awk '{print $1}' | uniq | wc -l > $outdir'ReadNumber'
+
+# how many unique alignments 
+cat $outdir'ReadNumber' | awk '{print $2}' | grep -w 1 | wc -l > $outdir'UniquelyMappedReads'
+# how many multiple mapped reads 
+cat $outdir'ReadNumber' | awk '{print $2}' | grep -v -w 1 | wc -l > $outdir'MultipleMappedReads'
+
+# average read length
+awk '{ sum += $2; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadLength'
+# sd of read length
+awk '{sum += $2; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdReadLength'
+
+# average mapped read length
+awk '{ sum += $5; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanMapReadLength'
+# sd of read length
+awk '{sum += $5; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdMapReadLength'
+
+# average mapped read length
+awk '{ sum += $6; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanMapRefLength'
+# sd of read length
+awk '{sum += $6; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdMapRefLength'
+
+# average mapped read length
+awk '{ sum += $11; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadtoReadRate'
+# sd of read length
+awk '{sum += $11; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdReadtoReadRate'
+
+# average mapped read length
+awk '{ sum += $12; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadtoRefRate'
+# sd of read length
+awk '{sum += $12; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdReadtoRefRate'
+
+# average match in read length
+awk '{ sum += $7; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanAlignmentMatchReadRate'
+
+# average match in ref length
+awk '{ sum += $8; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanAlignmentMatchRefRate'
+
+# average alignement insertion rate
+awk '{ sum += $9; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanInsReadRate'
+
+# average alignement insertion rate
+awk '{ sum += $10; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanDelReadRate'
+
+
+# prepare final file 
+echo $sampath$samfile > $outdir'MapperName'
+
+paste $outdir'MapperName' $outdir'AlignNumber' $outdir'ReadNumber' $outdir'UniquelyMappedReads' $outdir'MultipleMappedReads' $outdir'MeanReadLength' $outdir'SdReadLength' $outdir'MeanMapReadLength' $outdir'SdMapReadLength' $outdir'MeanMapRefLength' $outdir'SdMapRefLength' $outdir'MeanReadtoReadRate' $outdir'SdReadtoReadRate' $outdir'MeanReadtoRefRate' $outdir'SdReadtoRefRate' $outdir'MeanAlignmentMatchReadRate' $outdir'MeanAlignmentMatchRefRate' $outdir'MeanInsReadRate' $outdir'MeanDelReadRate' > $outdir'FinalTableTmp'
+
+echo -e "MapperName\tAlignmentNumber\tReadNumber\tUniquelyMappedReads\tMultipleMappedReads\tMeanReadLength\tSdReadLength\tMeanMappedReadLength\tSdMapReadLength\tMeanMappedRefLength\tSdMapRefLength\tMeanReadtoReadRate\tSdReadtoReadRate\tMeanReadtoRefRate\tSdReadtoRefRate\tMeanAlignmentMatchReadRate\tMeanAlignmentMatchRefRate\tMeanInsReadRate\tMeanDelReadRate" | cat - $outdir'FinalTableTmp' > $outdir'FinalTable'
 
