@@ -33,25 +33,22 @@ cat $fastapath$fastafile | grep -v '^>' | awk '{print length($0); }' > $outdir'F
 # merge read names and length
 echo "Generating read name and length..."
 paste $outdir'FastaReadNames' $outdir'FastaReadLength' > $outdir'FastaReadSpec'
-echo "Done. Output written to $outdir'FastaReadSpec'"
 
 
 # l2 
 echo "Calculating input mapped read length, alignment type and quality..."
 # get read mapped length
 cat $sampath$samfile | grep -v '^@' | awk '{print $1, $2, $5}' > $outdir'SamReadSpec'
-echo "Done. Output written to $outdir'SamReadSpec'"
 
 # merge 
 echo "Merging info read and alignment specs..."
 join <(sort $outdir'FastaReadSpec') <(sort $outdir'SamReadSpec') > $outdir'ReadSpec'
-echo "Done. Output written to $outdir'ReadSpec'"
 
 
 # add info on  read match or mismatch, l3
 
 echo "Parsing CIGAR line..."
-cat $sampath$samfile | grep -v ^@ | awk '{print $6}' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
+cat $sampath$samfile | grep -v ^@ | awk '{print $6}' |  sed 's/N/N /g' | sed 's/S/S /g' | sed 's/H/H /g' | sed 's/P/P /g' | sed 's/=/= /g' |  sed 's/X/X /g' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
 cat $sampath$samfile | grep -v ^@ | awk '{print $1}' > $outdir'SamNames'
 # 
 echo "1. Generating insertion count per read..."
