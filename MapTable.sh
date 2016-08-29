@@ -114,55 +114,74 @@ echo -e "ReadName\tReadLength\tAlignmentFlag\tAlignmentType\tMappedReadLength\tM
 echo "Calculating alignment number... "
 cat $outdir'AlnStatsSpec' | sed -e "1d" | wc -l > $outdir'AlignNumber'
 # how many input reads 
+echo "Calculating read number... "
 cat $outdir'AlnStatsSpec' | sed -e "1d" | awk '{print $1}' | uniq | wc -l > $outdir'ReadNumber'
 
 # how many unique alignments 
+echo "Calculating unique alignments... "
 cat $outdir'ReadNumber' | awk '{print $2}' | grep -w 1 | wc -l > $outdir'UniquelyMappedReads'
 # how many multiple mapped reads 
+echo "Calculating multiple alignments... "
 cat $outdir'ReadNumber' | awk '{print $2}' | grep -v -w 1 | wc -l > $outdir'MultipleMappedReads'
 
 # average read length
+echo "Calculating mean of read length... "
 awk '{ sum += $2; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadLength'
 # sd of read length
+echo "Calculating sd of read length... "
 awk '{sum+=$2; sumsq+=$2*$2} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdReadLength'
 
 # average mapped read length
+echo "Calculating mean of mapped read length... "
 awk '{ sum += $5; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanMapReadLength'
 # sd of read length
+echo "Calculating sd of mapped read length... "
 awk '{sum+=$5; sumsq+=$5*$5} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdMapReadLength'
 
 # average mapped read length
+echo "Calculating mean of mapped reference length... "
 awk '{ sum += $6; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanMapRefLength'
 # sd of read length
+echo "Calculating sd of mapped reference length... "
 awk '{sum+=$6; sumsq+=$6*$6} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdMapRefLength'
 
 # average mapped read length
+echo "Calculating mean of portion of mapped read on its total length... "
 awk '{ sum += $11; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadtoReadRate'
 # sd of read length
+echo "Calculating sd of portion of mapped read on its total length... "
 awk '{sum+=$11; sumsq+=$11*$11} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdReadtoReadRate'
 
 # average mapped read length
+echo "Calculating mean of portion of mapped read on mapped reference length... "
 awk '{ sum += $12; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadtoRefRate'
 # sd of read length
+echo "Calculating sd of portion of mapped read on mapped reference length... "
 awk '{sum+=$12; sumsq+=$12*$12} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdReadtoRefRate'
 
 # average match in read length
+echo "Calculating average percentage of mapping in mapped read length... "
 awk '{ sum += $7; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanAlignmentMatchReadRate'
 
 # average match in ref length
+echo "Calculating average percentage of mapping in mapped reference length... "
 awk '{ sum += $8; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanAlignmentMatchRefRate'
 
 # average alignement insertion rate
+echo "Calculating average percentage of insertions in mapped read length... "
 awk '{ sum += $9; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanInsReadRate'
 
 # average alignement insertion rate
+echo "Calculating average percentage of deletions in mapped read length... "
 awk '{ sum += $10; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanDelReadRate'
 
 
 # prepare final file 
-echo $sampath$samfile > $outdir'MapperName'
+echo "Finalizing..."
+echo $samfile > $outdir'MapperName'
 
 paste $outdir'MapperName' $outdir'AlignNumber' $outdir'ReadNumber' $outdir'UniquelyMappedReads' $outdir'MultipleMappedReads' $outdir'MeanReadLength' $outdir'SdReadLength' $outdir'MeanMapReadLength' $outdir'SdMapReadLength' $outdir'MeanMapRefLength' $outdir'SdMapRefLength' $outdir'MeanReadtoReadRate' $outdir'SdReadtoReadRate' $outdir'MeanReadtoRefRate' $outdir'SdReadtoRefRate' $outdir'MeanAlignmentMatchReadRate' $outdir'MeanAlignmentMatchRefRate' $outdir'MeanInsReadRate' $outdir'MeanDelReadRate' > $outdir'FinalTableTmp'
 
 echo -e "MapperName\tAlignmentNumber\tReadNumber\tUniquelyMappedReads\tMultipleMappedReads\tMeanReadLength\tSdReadLength\tMeanMappedReadLength\tSdMapReadLength\tMeanMappedRefLength\tSdMapRefLength\tMeanReadtoReadRate\tSdReadtoReadRate\tMeanReadtoRefRate\tSdReadtoRefRate\tMeanAlignmentMatchReadRate\tMeanAlignmentMatchRefRate\tMeanInsReadRate\tMeanDelReadRate" | cat - $outdir'FinalTableTmp' > $outdir'FinalTable'
+echo "DOne. Output written to FinalTable. "
 
