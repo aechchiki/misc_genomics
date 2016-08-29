@@ -24,14 +24,12 @@ echo "Input path to fasta file, followed by [ENTER]:"
 read fastapath
 echo "---"
 
-
 # print read length next to mapped fragment  in the final stats file
 
-awk 'FNR==NR{a[$1]=$4;next} ($1 in a) {print $0,a[$1],$2}'  $sampath$samfile'_FinalStats' $fastapath$fastafile'_ReadNameLength' | awk '{print $1,$2,$3}'  > $sampath$fastafile'_MappedReadLength' 
+awk 'FNR==NR{a[$1]=$4;next} ($1 in a) {print $0,a[$1],$2}' $sampath$samfile'_FinalStats' $fastapath$fastafile'_ReadNameLength' | awk '{print $1,$2,$3}'  > $sampath$fastafile'_MappedReadLength' 
 
 # get the mapped fragment length, divide it to the the whole read length => percentage of mapped reads 
 cat $sampath$fastafile'_MappedReadLength' | awk '!$3 {exit ; }  {print $1, $3/$2 }' > $sampath$fastafile'_MappedReadPerc'
 
 # how many reads map to how many fragments? check how many occurrences of the same ID in $1 
 cat $sampath$fastafile'_MappedReadPerc' | awk '{print $1}' | sort | uniq -c > $sampath$fastafile'_NumberOfMapsPerRead'
-
