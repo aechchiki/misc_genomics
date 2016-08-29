@@ -111,6 +111,7 @@ paste $outdir'AlnStats' $outdir'ReadAlnLen' $outdir'ReadRefLen' > $outdir'AlnSta
 echo -e "ReadName\tReadLength\tAlignmentFlag\tAlignmentType\tMappedReadLength\tMappedReferenceLength\tAlignmentMatchReadRate\tAlignmentMatchReferenceRate\tAlignmentInsertionsRate\tAlignmentDeletionsRate\tMappedReadtoReadRate\tMappedReadToRefRate" | cat - $outdir'AlnStatsSpecTmp' > $outdir'AlnStatsSpec'
 
 # how many alignments
+echo "Calculating alignment number... "
 cat $outdir'AlnStatsSpec' | sed -e "1d" | wc -l > $outdir'AlignNumber'
 # how many input reads 
 cat $outdir'AlnStatsSpec' | sed -e "1d" | awk '{print $1}' | uniq | wc -l > $outdir'ReadNumber'
@@ -123,27 +124,27 @@ cat $outdir'ReadNumber' | awk '{print $2}' | grep -v -w 1 | wc -l > $outdir'Mult
 # average read length
 awk '{ sum += $2; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadLength'
 # sd of read length
-awk '{sum += $2; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdReadLength'
+awk '{sum+=$2; sumsq+=$2*$2} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdReadLength'
 
 # average mapped read length
 awk '{ sum += $5; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanMapReadLength'
 # sd of read length
-awk '{sum += $5; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdMapReadLength'
+awk '{sum+=$5; sumsq+=$5*$5} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdMapReadLength'
 
 # average mapped read length
 awk '{ sum += $6; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanMapRefLength'
 # sd of read length
-awk '{sum += $6; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdMapRefLength'
+awk '{sum+=$6; sumsq+=$6*$6} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdMapRefLength'
 
 # average mapped read length
 awk '{ sum += $11; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadtoReadRate'
 # sd of read length
-awk '{sum += $11; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdReadtoReadRate'
+awk '{sum+=$11; sumsq+=$11*$11} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdReadtoReadRate'
 
 # average mapped read length
 awk '{ sum += $12; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanReadtoRefRate'
 # sd of read length
-awk '{sum += $12; array[NR]=$1} END { for (x=1; x<=NR; x++){sumsq += ((array[x]-(sum/NR))**2);} print sqrt(sumsq/NR) }' $outdir'AlnStatsSpec' > $outdir'SdReadtoRefRate'
+awk '{sum+=$12; sumsq+=$12*$12} END {print sqrt(sumsq/NR - (sum/NR)**2)}'  $outdir'AlnStatsSpec' > $outdir'SdReadtoRefRate'
 
 # average match in read length
 awk '{ sum += $7; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec' > $outdir'MeanAlignmentMatchReadRate'
