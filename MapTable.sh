@@ -8,6 +8,11 @@ echo "Input path to alignment file, followed by [ENTER]:"
 read sampath
 # TODO: add choice for bam files; call module samtools
 
+# vital-it module:  module add UHTS/Analysis/samtools/1.3;
+# to convert bam-sam: samtools view -h -o out.sam in.bam
+
+# if input = sam, then proceed directlly,
+# if input = bam, then convert first
 
 echo "Suggested fasta files in current working directory: "
 ls *.fasta
@@ -23,6 +28,7 @@ read outdir
 mkdir -p $outdir
 # TODO: add warning to add the final directrory backslass 
 
+# if fastq, convert first, or write a parser for filename 
 
 # l1
 echo "Calculating input read length..."
@@ -79,7 +85,7 @@ join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'MapReadLength') | awk '!$3
 
 # perc alignment mtch reference
 echo "Calculating percentage of alignment match in mapped reference length (M/M+D)..."
-join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'RefReadLength') | awk '!$3 {exit ;  {print $1, ($2/$3)}' > $outdir'AlnMatchPercRef'
+join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'RefReadLength') | awk '!$3 {exit ; } {print $1, ($2/$3)}' > $outdir'AlnMatchPercRef'
 
 # perc alignment insertions read
 echo "Calculating percentage of alignment match in mapped read length (I/M+I)..."
