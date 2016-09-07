@@ -89,7 +89,7 @@ join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'MapReadLength') | awk '!$3
 
 # perc alignment mtch reference
 echo "Calculating percentage of alignment match in mapped reference length (M/M+D)..."
-join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'RefReadLength') | awk '!$3 {exit ;  {print $1, ($2/$3)}' > $outdir'AlnMatchPercRef'
+join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'RefReadLength') | awk '!$3 {exit ; }  {print $1, ($2/$3)}' > $outdir'AlnMatchPercRef'
 
 # perc alignment insertions read
 echo "Calculating percentage of alignment match in mapped read length (I/M+I)..."
