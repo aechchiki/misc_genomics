@@ -116,16 +116,6 @@ echo -e "ReadName\tReadLength\tAlignmentFlag\tAlignmentType\tMappedReadLength\tM
 # how many alignments
 echo "Calculating alignment number... "
 cat $outdir'AlnStatsSpec' | sed -e "1d" | wc -l > $outdir'AlignNumber'
-# how many input reads 
-echo "Calculating read number... "
-cat $outdir'AlnStatsSpec' | sed -e "1d" | awk '{print $1}' | uniq | wc -l > $outdir'ReadNumber'
-
-# how many unique alignments 
-echo "Calculating unique alignments... "
-cat $outdir'ReadNumber' | awk '{print $2}' | grep -w 1 | wc -l > $outdir'UniquelyMappedReads'
-# how many multiple mapped reads 
-echo "Calculating multiple alignments... "
-cat $outdir'ReadNumber' | awk '{print $2}' | grep -v -w 1 | wc -l > $outdir'MultipleMappedReads'
 
 # average read length
 echo "Calculating mean of read length... "
@@ -183,8 +173,8 @@ awk '{ sum += $10; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec
 echo "Finalizing..."
 echo $samfile > $outdir'MapperName'
 
-paste $outdir'MapperName' $outdir'AlignNumber' $outdir'ReadNumber' $outdir'UniquelyMappedReads' $outdir'MultipleMappedReads' $outdir'MeanReadLength' $outdir'SdReadLength' $outdir'MeanMapReadLength' $outdir'SdMapReadLength' $outdir'MeanMapRefLength' $outdir'SdMapRefLength' $outdir'MeanReadtoReadRate' $outdir'SdReadtoReadRate' $outdir'MeanReadtoRefRate' $outdir'SdReadtoRefRate' $outdir'MeanAlignmentMatchReadRate' $outdir'MeanAlignmentMatchRefRate' $outdir'MeanInsReadRate' $outdir'MeanDelReadRate' > $outdir'FinalTableTmp'
+paste $outdir'MapperName' $outdir'AlignNumber' $outdir'MeanReadLength' $outdir'SdReadLength' $outdir'MeanMapReadLength' $outdir'SdMapReadLength' $outdir'MeanMapRefLength' $outdir'SdMapRefLength' $outdir'MeanReadtoReadRate' $outdir'SdReadtoReadRate' $outdir'MeanReadtoRefRate' $outdir'SdReadtoRefRate' $outdir'MeanAlignmentMatchReadRate' $outdir'MeanAlignmentMatchRefRate' $outdir'MeanInsReadRate' $outdir'MeanDelReadRate' > $outdir'FinalTableTmp'
 
-echo -e "MapperName\tAlignmentNumber\tReadNumber\tUniquelyMappedReads\tMultipleMappedReads\tMeanReadLength\tSdReadLength\tMeanMappedReadLength\tSdMapReadLength\tMeanMappedRefLength\tSdMapRefLength\tMeanReadtoReadRate\tSdReadtoReadRate\tMeanReadtoRefRate\tSdReadtoRefRate\tMeanAlignmentMatchReadRate\tMeanAlignmentMatchRefRate\tMeanInsReadRate\tMeanDelReadRate" | cat - $outdir'FinalTableTmp' > $outdir'FinalTable'
+echo -e "MapperName\tAlignmentNumber\tMeanReadLength\tSdReadLength\tMeanMappedReadLength\tSdMapReadLength\tMeanMappedRefLength\tSdMapRefLength\tMeanReadtoReadRate\tSdReadtoReadRate\tMeanReadtoRefRate\tSdReadtoRefRate\tMeanAlignmentMatchReadRate\tMeanAlignmentMatchRefRate\tMeanInsReadRate\tMeanDelReadRate" | cat - $outdir'FinalTableTmp' > $outdir'FinalTable'
 echo "DOne. Output written to FinalTable. "
 
