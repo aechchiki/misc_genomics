@@ -44,7 +44,7 @@ paste $outdir'FastaReadNames' $outdir'FastaReadLength' > $outdir'FastaReadSpec'
 # l2 
 echo "Calculating input mapped read length, alignment type and quality..."
 # get read mapped length
-cat $sampath$samfile | grep -v '^@' | awk '{print $1, $2, $5}' > $outdir'SamReadSpec'
+cat $sampath$samfile | grep -v '^@' | awk ' BEGIN { FS = "\t" } ;{print $1, $2, $5}' > $outdir'SamReadSpec'
 
 # merge 
 echo "Merging info read and alignment specs..."
@@ -54,8 +54,8 @@ join <(sort $outdir'FastaReadSpec') <(sort $outdir'SamReadSpec') > $outdir'ReadS
 # add info on  read match or mismatch, l3
 
 echo "Parsing CIGAR line..."
-cat $sampath$samfile | grep -v ^@ | awk '{print $6}' |  sed 's/N/N /g' | sed 's/S/S /g' | sed 's/H/H /g' | sed 's/P/P /g' | sed 's/=/= /g' |  sed 's/X/X /g' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
-cat $sampath$samfile | grep -v ^@ | awk '{print $1}' > $outdir'SamNames'
+cat $sampath$samfile | grep -v ^@ | awk ' BEGIN { FS = "	" } ;{print $6}' |  sed 's/N/N /g' | sed 's/S/S /g' | sed 's/H/H /g' | sed 's/P/P /g' | sed 's/=/= /g' |  sed 's/X/X /g' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
+cat $sampath$samfile | grep -v ^@ | awk ' BEGIN { FS = "	" } ;{print $1}' > $outdir'SamNames'
 # 
 echo "1. Generating insertion count per read..."
 cat $outdir'SamCigar' | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 's/[0-9]*[!H]//g'| sed 's/[0-9]*[!P]//g' | sed 's/[0-9]*[!\=]//g' | sed 's/[0-9]*[!X]//g' | sed 's/[0-9]*[!D]//g' | sed 's/[0-9]*[!M]//g' | sed 's/I//g'| awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c}' > $outdir$'CigarIns'
