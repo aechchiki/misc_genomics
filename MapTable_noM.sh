@@ -44,18 +44,18 @@ paste $outdir'FastaReadNames' $outdir'FastaReadLength' > $outdir'FastaReadSpec'
 # l2 
 echo "Calculating input mapped read length, alignment type and quality..."
 # get read mapped length
-cat $sampath$samfile | grep -v '^@' | awk '{print $1, $2, $5}' > $outdir'SamReadSpec'
+cat $sampath$samfile | grep -v '^@' | awk ' BEGIN { FS = "\t" } ;{print $1, $2, $5}' > $outdir'SamReadSpec'
 
 # merge 
 echo "Merging info read and alignment specs..."
-join <(sort $outdir'FastaReadSpec') <(sort $outdir'SamReadSpec') > $outdir'ReadSpec'
+join <(sort -k 1b,1 $outdir'FastaReadSpec') <(sort -k 1b,1 $outdir'SamReadSpec') > $outdir'ReadSpec'
 
 
 # add info on  read match or mismatch, l3
 
 echo "Parsing CIGAR line..."
-cat $sampath$samfile | grep -v ^@ | awk '{print $6}' |  sed 's/N/N /g' | sed 's/S/S /g' | sed 's/H/H /g' | sed 's/P/P /g' | sed 's/=/= /g' |  sed 's/X/X /g' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
-cat $sampath$samfile | grep -v ^@ | awk '{print $1}' > $outdir'SamNames'
+cat $sampath$samfile | grep -v ^@ | awk ' BEGIN { FS = "\t" } ;{print $6}' |  sed 's/N/N /g' | sed 's/S/S /g' | sed 's/H/H /g' | sed 's/P/P /g' | sed 's/=/= /g' |  sed 's/X/X /g' | sed 's/M/M /g' | sed 's/I/I /g' | sed 's/D/D /g' > $outdir'SamCigar'
+cat $sampath$samfile | grep -v ^@ | awk ' BEGIN { FS = "\t" } ;{print $1}' > $outdir'SamNames'
 # 
 echo "1. Generating insertion count per read..."
 cat $outdir'SamCigar' | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 's/[0-9]*[!H]//g'| sed 's/[0-9]*[!P]//g' | sed 's/[0-9]*[!\=]//g' | sed 's/[0-9]*[!X]//g' | sed 's/[0-9]*[!D]//g' | sed 's/[0-9]*[!M]//g' | sed 's/I//g'| awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c}' > $outdir$'CigarIns'
@@ -68,43 +68,44 @@ paste $outdir'SamNames' $outdir$'CigarDel' > $outdir'ReadNameCigarDel'
 
 # alignment match
 echo "3. Generating alignment match count per read..."
+echo "3.1 Generating non-identity match count per read..."
 cat $outdir'SamCigar' | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 's/[0-9]*[!H]//g'| sed 's/[0-9]*[!P]//g' | sed 's/[0-9]*[!\=]//g' | sed 's/[0-9]*[!M]//g' | sed 's/[0-9]*[!D]//g' | sed 's/[0-9]*[!I]//g' | sed 's/X//g'| awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c}' > $outdir$'CigarMatX'
 paste $outdir'SamNames' $outdir$'CigarMatX' > $outdir'ReadNameCigarMatX'
-
+echo "3.2 Generating identity match count per read..."
 cat $outdir'SamCigar' | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 's/[0-9]*[!H]//g'| sed 's/[0-9]*[!P]//g' | sed 's/[0-9]*[!X]//g' | sed 's/[0-9]*[!M]//g' | sed 's/[0-9]*[!D]//g' | sed 's/[0-9]*[!I]//g' | sed 's/=//g'| awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c}' > $outdir$'CigarMatEq'
 paste $outdir'SamNames' $outdir$'CigarMatEq' > $outdir'ReadNameCigarMatEq'
-
+echo "3.3 Merging alignment match count per read..."
 paste  $outdir'ReadNameCigarMatX' $outdir'ReadNameCigarMatEq' | awk '{print $1, ($2+$4)}' > $outdir'ReadNameCigarMat'
 
 # mapped read length
 echo "Calculating mapped read length (M+I)..."
-join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'ReadNameCigarIns') | awk '{print $1, ($2+$3)}' > $outdir'MapReadLength'
+join <(sort -k 1b,1 $outdir'ReadNameCigarMat') <(sort -k 1b,1 $outdir'ReadNameCigarIns') | awk '{print $1, ($2+$3)}' > $outdir'MapReadLength'
 
 # reference length to which read hap been mapped
 echo "Calculating reference length at mapping fragment (M+D)..."
-join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'ReadNameCigarDel') | awk '{print $1, ($2+$3)}' > $outdir'RefReadLength'
+join <(sort -k 1b,1 $outdir'ReadNameCigarMat') <(sort -k 1b,1 $outdir'ReadNameCigarDel') | awk '{print $1, ($2+$3)}' > $outdir'RefReadLength'
 
 # perc alignment mtch read
 echo "Calculating percentage of alignment match in mapped read length (M/M+I)..."
-join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'MapReadLength') | awk '!$3 {exit ; }{print $1, ($2/$3)}' > $outdir'AlnMatchPercRead'
+join <(sort -k 1b,1 $outdir'ReadNameCigarMat') <(sort -k 1b,1 $outdir'MapReadLength') | awk '!$3 {exit ; }{print $1, ($2/$3)}' > $outdir'AlnMatchPercRead'
 
 # perc alignment mtch reference
 echo "Calculating percentage of alignment match in mapped reference length (M/M+D)..."
-join <(sort $outdir'ReadNameCigarMat') <(sort $outdir'RefReadLength') | awk '!$3 {exit ; }  {print $1, ($2/$3)}' > $outdir'AlnMatchPercRef'
+join <(sort -k 1b,1 $outdir'ReadNameCigarMat') <(sort -k 1b,1 $outdir'RefReadLength') | awk '!$3 {exit ; }  {print $1, ($2/$3)}' > $outdir'AlnMatchPercRef'
 
 # perc alignment insertions read
 echo "Calculating percentage of alignment match in mapped read length (I/M+I)..."
-join <(sort $outdir'ReadNameCigarIns') <(sort $outdir'MapReadLength') | awk '!$3 {exit ; }{print $1, ($2/$3)}' > $outdir'AlnInsPercRead'
+join <(sort -k 1b,1 $outdir'ReadNameCigarIns') <(sort -k 1b,1 $outdir'MapReadLength') | awk '!$3 {exit ; }{print $1, ($2/$3)}' > $outdir'AlnInsPercRead'
 
 # perc alignment deletions reference
 echo "Calculating percentage of alignment match in mapped reference length (D/M+D)..."
-join <(sort $outdir'ReadNameCigarDel') <(sort $outdir'RefReadLength') | awk '!$3 {exit ; }{print $1, ($2/$3)}' > $outdir'AlnDelPercRef'
+join <(sort -k 1b,1 $outdir'ReadNameCigarDel') <(sort -k 1b,1 $outdir'RefReadLength') | awk '!$3 {exit ; }{print $1, ($2/$3)}' > $outdir'AlnDelPercRef'
 
 # merge basic stats
 paste $outdir'MapReadLength' $outdir'RefReadLength' $outdir'AlnMatchPercRead' $outdir'AlnMatchPercRef' $outdir'AlnInsPercRead' $outdir'AlnDelPercRef' | awk '{print $1,$2,$4,$6,$8,$10,$12}' > $outdir'AlnCalc'
 
 # merge all info tgth
-join <(sort $outdir'ReadSpec') <(sort $outdir'AlnCalc') > $outdir'AlnStats'
+join <(sort -k 1b,1 $outdir'ReadSpec') <(sort -k 1b,1 $outdir'AlnCalc') > $outdir'AlnStats'
 
 # mapped length to mapped read
 echo "Calculating proportion of mapped length to the total read length... "
@@ -188,8 +189,8 @@ awk '{ sum += $10; n++ } END { if (n > 0) print sum / n; }' $outdir'AlnStatsSpec
 echo "Finalizing..."
 echo $samfile > $outdir'MapperName'
 
-paste $outdir'MapperName' $outdir'AlignNumber' $outdir'ReadNumber' $outdir'UniquelyMappedReads' $outdir'MultipleMappedReads' $outdir'MeanReadLength' $outdir'SdReadLength' $outdir'MeanMapReadLength' $outdir'SdMapReadLength' $outdir'MeanMapRefLength' $outdir'SdMapRefLength' $outdir'MeanReadtoReadRate' $outdir'SdReadtoReadRate' $outdir'MeanReadtoRefRate' $outdir'SdReadtoRefRate' $outdir'MeanAlignmentMatchReadRate' $outdir'MeanAlignmentMatchRefRate' $outdir'MeanInsReadRate' $outdir'MeanDelReadRate' > $outdir'FinalTableTmp'
+paste $outdir'MapperName' $outdir'AlignNumber' $outdir'MeanReadLength' $outdir'SdReadLength' $outdir'MeanMapReadLength' $outdir'SdMapReadLength' $outdir'MeanMapRefLength' $outdir'SdMapRefLength' $outdir'MeanReadtoReadRate' $outdir'SdReadtoReadRate' $outdir'MeanReadtoRefRate' $outdir'SdReadtoRefRate' $outdir'MeanAlignmentMatchReadRate' $outdir'MeanAlignmentMatchRefRate' $outdir'MeanInsReadRate' $outdir'MeanDelReadRate' > $outdir'FinalTableTmp'
 
-echo -e "MapperName\tAlignmentNumber\tReadNumber\tUniquelyMappedReads\tMultipleMappedReads\tMeanReadLength\tSdReadLength\tMeanMappedReadLength\tSdMapReadLength\tMeanMappedRefLength\tSdMapRefLength\tMeanReadtoReadRate\tSdReadtoReadRate\tMeanReadtoRefRate\tSdReadtoRefRate\tMeanAlignmentMatchReadRate\tMeanAlignmentMatchRefRate\tMeanInsReadRate\tMeanDelReadRate" | cat - $outdir'FinalTableTmp' > $outdir'FinalTable'
+echo -e "MapperName\tAlignmentNumber\tMeanReadLength\tSdReadLength\tMeanMappedReadLength\tSdMapReadLength\tMeanMappedRefLength\tSdMapRefLength\tMeanReadtoReadRate\tSdReadtoReadRate\tMeanReadtoRefRate\tSdReadtoRefRate\tMeanAlignmentMatchReadRate\tMeanAlignmentMatchRefRate\tMeanInsReadRate\tMeanDelReadRate" | cat - $outdir'FinalTableTmp' > $outdir'FinalTable'
 echo "DOne. Output written to FinalTable. "
 
