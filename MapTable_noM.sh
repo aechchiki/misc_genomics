@@ -70,6 +70,7 @@ paste $outdir'SamNames' $outdir$'CigarDel' > $outdir'ReadNameCigarDel'
 echo "3. Generating alignment match count per read..."
 cat $outdir'SamCigar' | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 's/[0-9]*[!H]//g'| sed 's/[0-9]*[!P]//g' | sed 's/[0-9]*[!\=]//g' | sed 's/[0-9]*[!M]//g' | sed 's/[0-9]*[!D]//g' | sed 's/[0-9]*[!I]//g' | sed 's/X//g'| awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c}' > $outdir$'CigarMatX'
 paste $outdir'SamNames' $outdir$'CigarMatX' > $outdir'ReadNameCigarMatX'
+
 cat $outdir'SamCigar' | sed 's/[0-9]*[!N]//g' | sed 's/[0-9]*[!S]//g' | sed 's/[0-9]*[!H]//g'| sed 's/[0-9]*[!P]//g' | sed 's/[0-9]*[!X]//g' | sed 's/[0-9]*[!M]//g' | sed 's/[0-9]*[!D]//g' | sed 's/[0-9]*[!I]//g' | sed 's/=//g'| awk '{c=0;for(i=1;i<=NF;++i){c+=$i};print c}' > $outdir$'CigarMatEq'
 paste $outdir'SamNames' $outdir$'CigarMatEq' > $outdir'ReadNameCigarMatEq'
 
